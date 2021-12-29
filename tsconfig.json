@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "moduleResolution": "node",
+    "sourceMap": false,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "declaration": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "target": "es6",
+    "rootDir": "src/",
+    "outDir": "dist/",
+    "lib": ["es6"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "typings", "dist"]
+}

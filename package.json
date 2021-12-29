@@ -1,0 +1,42 @@
+{
+  "name": "@esdc-it-rp/azuredevops-common",
+  "version": "0.0.1",
+  "description": "Common Azure Library used by extensions created by ESDC IT Research and Prototyping",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "clean": "rimraf ./dist ./out",
+    "lint": "eslint --fix src/**/*.{js,jsx,ts,tsx}",
+    "compile": "npm run clean && tsc",
+    "publish": "npm run compile && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "h"
+  },
+  "keywords": [
+    "Azure",
+    "DevOps",
+    "Extension",
+    "Library"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "azure-devops-extension-api": "^1.158.0",
+    "azure-devops-extension-sdk": "^2.0.11",
+    "date-fns": "^2.27.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.8.1",
+    "@typescript-eslint/parser": "^5.8.1",
+    "eslint": "^8.5.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1",
+    "rimraf": "^2.7.1",
+    "typescript": "^4.5.4"
+  }
+}
