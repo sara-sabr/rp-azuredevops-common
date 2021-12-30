@@ -1,6 +1,6 @@
 {
   "name": "@esdc-it-rp/azuredevops-common",
-  "version": "0.0.1",
+  "version": "1.0.1",
   "description": "Common Azure Library used by extensions created by ESDC IT Research and Prototyping",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -38,5 +38,8 @@
     "prettier": "^2.5.1",
     "rimraf": "^2.7.1",
     "typescript": "^4.5.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
