@@ -95,22 +95,32 @@ export class SearchRepository {
 
       // Now populate the data as we want to bulk request the data.
       let ids = Array.from(nodeMap.keys());
-      const workItemDataResults =
-        await CommonRepositories.WIT_API_CLIENT.getWorkItemsBatch(
-          {
-            ids: ids,
-            fields: fieldNames,
-            $expand: WorkItemExpand.None,
-            asOf: results.asOf,
-            errorPolicy: WorkItemErrorPolicy.Fail,
-          },
-          projectName
-        );
 
-      let workItem: WorkItem;
-      for (let idx = 0; idx < workItemDataResults.length; idx++) {
-        workItem = workItemDataResults[idx];
-        nodeMap.get(workItem.id)?.data?.populateFromWorkItem(workItem);
+      // We need to batch this in sets of 200 max as that is the limit allowed by
+      // the API spec.
+      // @see https://docs.microsoft.com/en-us/rest/api/azure/devops/wit/work-items/get-work-items-batch?view=azure-devops-rest-6.0
+      let startIdx = 0;
+
+      while (startIdx < ids.length) {
+        const workItemDataResults =
+          await CommonRepositories.WIT_API_CLIENT.getWorkItemsBatch(
+            {
+              ids: ids.slice(startIdx, startIdx + 200),
+              fields: fieldNames,
+              $expand: WorkItemExpand.None,
+              asOf: results.asOf,
+              errorPolicy: WorkItemErrorPolicy.Fail,
+            },
+            projectName
+          );
+
+        let workItem: WorkItem;
+        for (let idx = 0; idx < workItemDataResults.length; idx++) {
+          workItem = workItemDataResults[idx];
+          nodeMap.get(workItem.id)?.data?.populateFromWorkItem(workItem);
+        }
+
+        startIdx += 200;
       }
     }
 
