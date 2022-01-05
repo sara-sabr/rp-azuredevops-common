@@ -1,5 +1,6 @@
 export { TreeNode } from "./Common/TreeNode";
 export { WorkItemBaseEntity } from "./Common/WorkItemBase.entity";
+export { WorkItemBaseWithPredecessor } from "./Common/WorkItemBaseWithPredecessor.entity";
 export { SearchRepository } from "./Search/Search.repository";
 export { SearchResultEntity } from "./Search/SearchResult.entity";
 export { ProjectService } from "./Common/Project.service";

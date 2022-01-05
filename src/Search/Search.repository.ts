@@ -16,6 +16,8 @@ import { ProjectService } from "../Common/Project.service";
 import { SearchResultEntity } from "./SearchResult.entity";
 import { WorkItemBaseEntity } from "../Common/WorkItemBase.entity";
 import { CommonRepositories } from "../Common/Common.repository";
+import { TreeNode } from "../Common/TreeNode";
+import { WorkItemBaseWithPredecessor } from "../Common/WorkItemBaseWithPredecessor.entity";
 
 /**
  * Search repository.
@@ -121,6 +123,18 @@ export class SearchRepository {
         }
 
         startIdx += 200;
+      }
+
+      // Now see if we need to get predecessor or successor.
+      let data: T = new type();
+      if (data instanceof WorkItemBaseWithPredecessor) {
+        await this.populatePredecessor(
+          (<unknown>rootNode) as SearchResultEntity<
+            WorkItemBaseWithPredecessor,
+            number
+          >,
+          projectName
+        );
       }
     }
 
@@ -267,5 +281,68 @@ export class SearchRepository {
     }
 
     return buffer;
+  }
+
+  /**
+   * Populate the search results with the predecessor information.
+   *
+   * @param rootNode the search results
+   */
+  public static async populatePredecessor<
+    T extends WorkItemBaseWithPredecessor
+  >(
+    rootNode: SearchResultEntity<T, number>,
+    projectName: string
+  ): Promise<void> {
+    if (
+      rootNode === null ||
+      rootNode.isEmpty() ||
+      rootNode.nodeMap === undefined
+    ) {
+      // Do nothing.
+      return;
+    }
+
+    const ids: number[] = Array.from(rootNode.nodeMap.keys());
+    let startIdx = 0;
+    let sourceNode: TreeNode<T, number> | undefined;
+
+    // Batch up the queries into 500 batches.
+    while (startIdx < ids.length) {
+      const subIds = ids.slice(startIdx, startIdx + 500);
+
+      const results = await CommonRepositories.WIT_API_CLIENT.queryByWiql(
+        {
+          query:
+            "SELECT [System.Id],[System.WorkItemType],[System.Title] " +
+            "FROM WorkItemLinks " +
+            "WHERE ([Source].[System.TeamProject] = @project AND " +
+            "[Source].[System.Id] IN (" +
+            subIds.toString() +
+            ")) AND " +
+            // Rest of query creates tree result.
+            "([System.Links.LinkType] = 'System.LinkTypes.Dependency-Reverse') AND " +
+            "([Target].[System.TeamProject] = @project AND " +
+            "[Target].[System.WorkItemType] <> '') " +
+            "ORDER BY [System.Id] mode(MustContain)",
+        },
+        projectName
+      );
+
+      for (let workItemLink of results.workItemRelations) {
+        if (workItemLink.source === null) {
+          continue;
+        }
+
+        // Source: Successor
+        // Target: Predecessor
+        sourceNode = rootNode.nodeMap.get(workItemLink.source.id);
+        if (sourceNode && sourceNode.data) {
+          sourceNode.data.predecessor.push(workItemLink.target.id);
+        }
+      }
+
+      startIdx += 500;
+    }
   }
 }

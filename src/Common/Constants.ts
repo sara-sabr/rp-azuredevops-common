@@ -55,6 +55,16 @@ export class Constants {
   static readonly WIT_TYPE_EPIC = "Epic";
 
   /**
+   * Label for Task.
+   */
+  static readonly WIT_TYPE_TASK = "Task";
+
+  /**
+   * Label for Continuous Learning.
+   */
+  static readonly WIT_TYPE_LEARNING = "Continuous Learning";
+
+  /**
    * The system name for the ID field.
    */
   static readonly WIT_FIELD_ID = "System.Id";
