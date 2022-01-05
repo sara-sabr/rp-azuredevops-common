@@ -16,6 +16,8 @@ import { ProjectService } from "../Common/Project.service";
 import { SearchResultEntity } from "./SearchResult.entity";
 import { WorkItemBaseEntity } from "../Common/WorkItemBase.entity";
 import { CommonRepositories } from "../Common/Common.repository";
+import { TreeNode } from "../Common/TreeNode";
+import { WorkItemBaseWithPredecessor } from "../Common/WorkItemBaseWithPredecessor.entity";
 
 /**
  * Search repository.
@@ -95,22 +97,44 @@ export class SearchRepository {
 
       // Now populate the data as we want to bulk request the data.
       let ids = Array.from(nodeMap.keys());
-      const workItemDataResults =
-        await CommonRepositories.WIT_API_CLIENT.getWorkItemsBatch(
-          {
-            ids: ids,
-            fields: fieldNames,
-            $expand: WorkItemExpand.None,
-            asOf: results.asOf,
-            errorPolicy: WorkItemErrorPolicy.Fail,
-          },
+
+      // We need to batch this in sets of 200 max as that is the limit allowed by
+      // the API spec.
+      // @see https://docs.microsoft.com/en-us/rest/api/azure/devops/wit/work-items/get-work-items-batch?view=azure-devops-rest-6.0
+      let startIdx = 0;
+
+      while (startIdx < ids.length) {
+        const workItemDataResults =
+          await CommonRepositories.WIT_API_CLIENT.getWorkItemsBatch(
+            {
+              ids: ids.slice(startIdx, startIdx + 200),
+              fields: fieldNames,
+              $expand: WorkItemExpand.None,
+              asOf: results.asOf,
+              errorPolicy: WorkItemErrorPolicy.Fail,
+            },
+            projectName
+          );
+
+        let workItem: WorkItem;
+        for (let idx = 0; idx < workItemDataResults.length; idx++) {
+          workItem = workItemDataResults[idx];
+          nodeMap.get(workItem.id)?.data?.populateFromWorkItem(workItem);
+        }
+
+        startIdx += 200;
+      }
+
+      // Now see if we need to get predecessor or successor.
+      let data: T = new type();
+      if (data instanceof WorkItemBaseWithPredecessor) {
+        await this.populatePredecessor(
+          (<unknown>rootNode) as SearchResultEntity<
+            WorkItemBaseWithPredecessor,
+            number
+          >,
           projectName
         );
-
-      let workItem: WorkItem;
-      for (let idx = 0; idx < workItemDataResults.length; idx++) {
-        workItem = workItemDataResults[idx];
-        nodeMap.get(workItem.id)?.data?.populateFromWorkItem(workItem);
       }
     }
 
@@ -257,5 +281,68 @@ export class SearchRepository {
     }
 
     return buffer;
+  }
+
+  /**
+   * Populate the search results with the predecessor information.
+   *
+   * @param rootNode the search results
+   */
+  public static async populatePredecessor<
+    T extends WorkItemBaseWithPredecessor
+  >(
+    rootNode: SearchResultEntity<T, number>,
+    projectName: string
+  ): Promise<void> {
+    if (
+      rootNode === null ||
+      rootNode.isEmpty() ||
+      rootNode.nodeMap === undefined
+    ) {
+      // Do nothing.
+      return;
+    }
+
+    const ids: number[] = Array.from(rootNode.nodeMap.keys());
+    let startIdx = 0;
+    let sourceNode: TreeNode<T, number> | undefined;
+
+    // Batch up the queries into 500 batches.
+    while (startIdx < ids.length) {
+      const subIds = ids.slice(startIdx, startIdx + 500);
+
+      const results = await CommonRepositories.WIT_API_CLIENT.queryByWiql(
+        {
+          query:
+            "SELECT [System.Id],[System.WorkItemType],[System.Title] " +
+            "FROM WorkItemLinks " +
+            "WHERE ([Source].[System.TeamProject] = @project AND " +
+            "[Source].[System.Id] IN (" +
+            subIds.toString() +
+            ")) AND " +
+            // Rest of query creates tree result.
+            "([System.Links.LinkType] = 'System.LinkTypes.Dependency-Reverse') AND " +
+            "([Target].[System.TeamProject] = @project AND " +
+            "[Target].[System.WorkItemType] <> '') " +
+            "ORDER BY [System.Id] mode(MustContain)",
+        },
+        projectName
+      );
+
+      for (let workItemLink of results.workItemRelations) {
+        if (workItemLink.source === null) {
+          continue;
+        }
+
+        // Source: Successor
+        // Target: Predecessor
+        sourceNode = rootNode.nodeMap.get(workItemLink.source.id);
+        if (sourceNode && sourceNode.data) {
+          sourceNode.data.predecessor.push(workItemLink.target.id);
+        }
+      }
+
+      startIdx += 500;
+    }
   }
 }
