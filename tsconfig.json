@@ -11,7 +11,7 @@
     "target": "es6",
     "rootDir": "src/",
     "outDir": "dist/",
-    "lib": ["es6"]
+    "lib": ["es6", "dom"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "typings", "dist"]
