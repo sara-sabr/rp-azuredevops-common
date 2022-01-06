@@ -51,14 +51,15 @@ export class ProjectCacheService {
       const vistiStack: WorkItemClassificationNode[] = [];
       let current: WorkItemClassificationNode | undefined = projectIterations;
 
-      while (vistiStack.length > 0) {
-        current = vistiStack.pop();
-        if (current) {
-          this.CACHE_ITERATIONS.set(current.name, Object.freeze(current));
-          if (projectIterations && projectIterations.hasChildren) {
-            vistiStack.push(...projectIterations.children);
-          }
+      while (current !== undefined) {
+        this.CACHE_ITERATIONS.set(
+          current.path.replace("\\Iteration", "").substring(1),
+          Object.freeze(current)
+        );
+        if (current && current.hasChildren) {
+          vistiStack.push(...current.children);
         }
+        current = vistiStack.pop();
       }
     }
 
