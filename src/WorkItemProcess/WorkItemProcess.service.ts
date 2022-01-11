@@ -1,7 +1,3 @@
-// Library
-import { GetWorkItemTypeExpand } from "azure-devops-extension-api/WorkItemTrackingProcess";
-import { ProjectProperty } from "azure-devops-extension-api/Core";
-
 // Project
 import { WorkItemTypeEntity } from "./WorkItemType";
 import { CommonRepositories } from "../Common/Common.repository";
@@ -42,18 +38,11 @@ export class WorkItemProcessService {
   > {
     if (this.workItemTypes.size === 0) {
       const projectId: string = await ProjectService.getProjectId();
-      const projectProcessId: ProjectProperty[] =
-        await CommonRepositories.CORE_API_CLIENT.getProjectProperties(
-          projectId,
-          [WorkItemProcessService.PROJECT_PROCESS_PROPERTY]
-        );
-      const processInformation =
-        await CommonRepositories.PROCESS_API_CLIENT.getProcessWorkItemTypes(
-          projectProcessId[0].value,
-          GetWorkItemTypeExpand.States
-        );
+      const azureWorkInfo =
+        await CommonRepositories.WIT_API_CLIENT.getWorkItemTypes(projectId);
 
-      for (const c of processInformation) {
+      for (const c of azureWorkInfo) {
+        console.log(c.name + " color " + c.color);
         this.workItemTypes.set(c.name, this.factory.createWorkItemType(c));
       }
     }

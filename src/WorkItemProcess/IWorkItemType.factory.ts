@@ -1,4 +1,4 @@
-import { ProcessWorkItemType } from "azure-devops-extension-api/WorkItemTrackingProcess";
+import { WorkItemType } from "azure-devops-extension-api/WorkItemTracking";
 import { WorkItemTypeEntity } from "./WorkItemType";
 
 export interface IWorkItemTypeFactory {
@@ -8,5 +8,5 @@ export interface IWorkItemTypeFactory {
    * @param processWorkItem the work item.
    * @returns the information populated.
    */
-  createWorkItemType(processWorkItem: ProcessWorkItemType): WorkItemTypeEntity;
+  createWorkItemType(processWorkItem: WorkItemType): WorkItemTypeEntity;
 }
