@@ -42,7 +42,6 @@ export class WorkItemProcessService {
         await CommonRepositories.WIT_API_CLIENT.getWorkItemTypes(projectId);
 
       for (const c of azureWorkInfo) {
-        console.log(c.name + " color " + c.color);
         this.workItemTypes.set(c.name, this.factory.createWorkItemType(c));
       }
     }

@@ -21,7 +21,6 @@ export class WorkItemTypeFactory implements IWorkItemTypeFactory {
     }
 
     instance.icon = workItem.icon.id;
-    console.log(instance.icon);
 
     for (const state of workItem.states) {
       if (WorkItemTypeEntity.STATE_CATEGORY_PROPOSED === state.category) {
