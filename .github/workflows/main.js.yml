@@ -16,7 +16,6 @@ jobs:
         echo "$GITHUB_REPOSITORY"
     - name: 'Automated Version Bump'
       uses: 'phips28/gh-action-bump-version@master'
-      if: ${{ startsWith(env.GITHUB_REPOSITORY, 'sara-sabr')}}
       env:
         GITHUB_TOKEN: ${{ secrets.GD_TOKEN }}
         target-branch: 'main'
