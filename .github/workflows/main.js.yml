@@ -34,8 +34,8 @@ jobs:
     - run: npm ci
     - run: npm run build --if-present
     - run: |
-          echo "Publish to NPMJS"
-          npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-          npm publish --ignore-scripts
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        echo "Publish to NPMJS"
+        npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+        npm publish --ignore-scripts
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
