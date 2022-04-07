@@ -1,0 +1,38 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Release to Prod
+
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Checkout code'
+      uses: actions/checkout@v2
+    - name: 'Automated Version Bump'
+      uses: 'phips28/gh-action-bump-version@master'
+      if: ${{ startsWith(github.GITHUB_REPOSITORY, 'sara-sabr')}}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        target-branch: 'main'
+      with:
+        skip-tag:  'true'
+    - name: Use Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '16'
+    - run: |
+        echo "::group::Environment Information"
+        echo "Node Version: $(node -v)"
+        echo "NPM: $(npm -v)"
+        echo "::endgroup::"
+    - run: npm ci
+#    - run: npm run audio
+#      env:
+#        APIKEY: ${{ secrets.SPEECH_KEY }}
+#        REGION: ${{ secrets.SPEECH_REGION }}
+    - run: npm run build --if-present
+    - run: npm run publish
