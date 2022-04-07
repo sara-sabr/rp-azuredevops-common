@@ -170,6 +170,21 @@ export class ProjectService {
   }
 
   /**
+   * Get the current project ID.
+   *
+   * @returns the current project ID.
+   */
+  static async getProjectId(): Promise<string> {
+    const projectInfo = await this.getProject();
+
+    if (projectInfo) {
+      return projectInfo.id;
+    }
+
+    throw Error("Unable to get project info");
+  }
+
+  /**
    * Get the project information which provides access to the current project associated to this page.
    *
    * @returns the project or undefined if not found.
