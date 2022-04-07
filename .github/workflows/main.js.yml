@@ -16,7 +16,7 @@ jobs:
       uses: 'phips28/gh-action-bump-version@master'
       if: ${{ startsWith(github.GITHUB_REPOSITORY, 'sara-sabr')}}
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GD_TOKEN }}
         target-branch: 'main'
       with:
         skip-tag:  'true'
