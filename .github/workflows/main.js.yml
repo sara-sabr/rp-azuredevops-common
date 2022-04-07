@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: 'Checkout code'
       uses: actions/checkout@v2
+    - run: |
+        echo "${{ github.GITHUB_REPOSITORY }}"
     - name: 'Automated Version Bump'
       uses: 'phips28/gh-action-bump-version@master'
       if: ${{ startsWith(github.GITHUB_REPOSITORY, 'sara-sabr')}}
@@ -30,9 +32,10 @@ jobs:
         echo "NPM: $(npm -v)"
         echo "::endgroup::"
     - run: npm ci
-#    - run: npm run audio
-#      env:
-#        APIKEY: ${{ secrets.SPEECH_KEY }}
-#        REGION: ${{ secrets.SPEECH_REGION }}
     - run: npm run build --if-present
-    - run: npm run publish
+    - run: |
+          echo "Publish to NPMJS"
+          npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+          npm publish --ignore-scripts
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
