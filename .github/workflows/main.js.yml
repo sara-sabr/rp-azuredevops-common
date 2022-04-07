@@ -34,7 +34,7 @@ jobs:
         echo "NPM: $(npm -v)"
         echo "::endgroup::"
     - run: npm ci
-    - run: npm run build --if-present
+    - run: npm run compile
     - run: |
         echo "Publish to NPMJS"
         npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
