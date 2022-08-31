@@ -5,7 +5,7 @@ name: Auto-Update
 # Controls when the action will run. 
 on:
   schedule:
-    - cron: "0 0 1/1 * *"
+    - cron: "0 0 1 * *"
   push:
     branches: 
     - main
